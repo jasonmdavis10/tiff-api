@@ -1,0 +1,40 @@
+from fiona import collection
+import os
+
+def read_txt(filename):
+    """
+    read a textfile and return a list of rows
+    
+    Args:
+        filename (str): path to file to open
+    Returns:
+        list of lines from text file
+    """
+    with open(filename, 'r') as lines: # with is a context manager.
+        return lines.readlines().splitlines(True)
+
+def write_shape(filename, schema, data):
+	"""
+	Write data to filename based on schema as ESRI shapefile format
+
+	Args:
+		filename (str): path to output file
+		schema (dict): data schema
+		data (list): list of dicts with data
+	"""
+	with collection(filename, "w", "ESRI Shapefile", schema) as output:
+			for row in data:
+				output.write(row)
+
+def make_directory(dir_string):
+	'''
+	Create a directory to store satellite images from each run of the script
+
+	Args:
+		directory (str): file location
+	Returns:
+		a newly created directory in the working directory location
+	''' 
+	d = os.path.dirname(dir_string)
+    	if not os.path.exists(d):
+        	os.makedirs(d)

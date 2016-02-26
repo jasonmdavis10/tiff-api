@@ -1,0 +1,94 @@
+from geo import *
+from apis import get_latlon
+from input_output import *
+import os
+from timeFunctions import pauseTime
+from planet import api
+
+# folder locations
+indir = "/home/jasondavis/planet_api/data"
+outdir = "/home/jasondavis/planet_api/output"
+tempdir = "/home/jasondavis/planet_api/intermediate"
+inaoi = "/home/jasondavis/planet_api/data/aoi.txt"
+print "The working directory is " + os.getcwd()
+
+# Define location which will become our aoi
+#location = "san_francisco"
+
+
+# Get coordinates from a string value location and output these coordinates as a tuple
+#t = get_latlon("Tulare, CA")
+#print t
+
+aoi = {
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              -116.81488037109375,
+              32.61508668275336
+            ],
+            [
+              -116.81488037109375,
+              32.79651010951669
+            ],
+            [
+              -116.60888671874999,
+              32.79651010951669
+            ],
+            [
+              -116.60888671874999,
+              32.61508668275336
+            ],
+            [
+              -116.81488037109375,
+              32.61508668275336
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
+#print dump_json(aoi)
+# Convert coordinates to geojson format
+#aoi = build_geojson(t)
+#print aoi
+#pauseTime(1)
+
+# Define api key
+client = api.Client("5709a2a42720402e8c27104dbdecadb8")
+
+#collect all scenes here
+scenes = []
+
+# get `count` number of scenes, for this example, use 1 to verify paging
+# Define cloud filter (0.1 = less than 10% cloud cover)
+filters = {'cloud_cover.estimated.lt': 0.8}
+
+# Create planet object of all scenes with the given aoi
+scene = client.get_scenes_list(scene_type= 'landsat', intersects=aoi, **filters)
+
+# we'll use 3 `pages` of results
+for s in scene.iter(pages=50):
+	j = scenes.extend(s.get()['features'])
+
+ids = [f['id'] for f in scenes]
+print 'fetching tiffs for'
+print '\n'.join(ids)
+
+# receive callback and write downloaded file to output directory
+
+callback = api.write_to_file(directory='/home/jasondavis/planet_api/output')
+callbacks = client.fetch_scene_geotiffs(ids, callback=callback)
+for cb in callbacks:
+	body = cb.await()
+	print 'downloaded', body.name, 'size=%s bytes' % len(body)
+
+

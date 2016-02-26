@@ -1,0 +1,14 @@
+from geojson import Point
+
+def build_geojson(tuplee):
+	'''
+	Builds a geojson object from a set of lat lon coordinates
+	Args:
+		lat (float): coordinates lattitude
+		lon (float): coorinates longitude
+	Returns:
+		a geojson object that can be fed to the planet functions
+	'''
+	jsonObj = Point(tuplee)
+	return jsonObj
+	
